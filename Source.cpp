@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <chrono>
 #include <thread>
 #include <conio.h>
@@ -30,6 +31,27 @@ string getDocumentsPath() {
     return path;
 }
 
+// Status aus Datei laden
+void loadStatusFromFile(Plant& p) {
+    string path = getDocumentsPath();
+    ifstream file(path);
+    if (!file) return; // Datei existiert nicht ? Standardwerte bleiben
+
+    string line;
+    while (getline(file, line)) {
+        istringstream iss(line);
+        string key;
+        char sep;
+        int value;
+        if (iss >> key >> sep >> value) {
+            if (key == "Growth") p.growth = value;
+            else if (key == "Water") p.water = value;
+            else if (key == "Health") p.health = value;
+        }
+    }
+    file.close();
+}
+
 // Status in Datei speichern
 void saveStatusToFile(const Plant& p) {
     string path = getDocumentsPath();
@@ -39,10 +61,9 @@ void saveStatusToFile(const Plant& p) {
         return;
     }
 
-    file << "Plant Status:\n";
-    file << "Growth : " << p.growth << "\n";
-    file << "Water  : " << p.water << "\n";
-    file << "Health : " << p.health << "\n";
+    file << "Growth:" << p.growth << "\n";
+    file << "Water:" << p.water << "\n";
+    file << "Health:" << p.health << "\n";
 
     file.close();
 }
@@ -101,6 +122,7 @@ void waterPlant(Plant& p) {
 
 int main() {
     Plant plant;
+    loadStatusFromFile(plant); // Werte aus Datei laden
 
     while (plant.health > 0) {
         cout << "Press 'g' to water the plant, otherwise wait 1 hour. Press 'c' to clear the screen.\n";
