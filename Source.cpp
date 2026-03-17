@@ -9,13 +9,7 @@
 
 using namespace std;
 
-struct Plant {
-    int growth = 0;
-    int water = 10;
-    int health = 20;
-};
-
-// sichere Methode, um Dokumente-Ordner-Pfad zu bekommen
+// Sichere Methode, um Dokumente-Ordner-Pfad zu bekommen
 string getDocumentsPath() {
     char* buffer = nullptr;
     size_t len = 0;
@@ -31,26 +25,44 @@ string getDocumentsPath() {
     return path;
 }
 
-// Status aus Datei laden
-void loadStatusFromFile(Plant& p) {
-    string path = getDocumentsPath();
-    ifstream file(path);
-    if (!file) return; // Datei existiert nicht ? Standardwerte bleiben
+// Struct Plant mit automatischem Laden beim Erstellen
+struct Plant {
+    int growth;
+    int water;
+    int health;
 
-    string line;
-    while (getline(file, line)) {
-        istringstream iss(line);
-        string key;
-        char sep;
-        int value;
-        if (iss >> key >> sep >> value) {
-            if (key == "Growth") p.growth = value;
-            else if (key == "Water") p.water = value;
-            else if (key == "Health") p.health = value;
+    Plant() {
+        // Defaultwerte
+        growth = 0;
+        water = 10;
+        health = 20;
+
+        // Datei laden
+        string path = getDocumentsPath();
+        ifstream file(path);
+        if (!file) return; // Datei existiert nicht
+
+        string line;
+        while (getline(file, line)) {
+            size_t sep = line.find(':');
+            if (sep == string::npos) continue;
+
+            string key = line.substr(0, sep);
+            string valueStr = line.substr(sep + 1);
+
+            // Whitespace trimmen
+            while (!key.empty() && key.back() == ' ') key.pop_back();
+            while (!valueStr.empty() && valueStr.front() == ' ') valueStr.erase(0, 1);
+
+            int value = stoi(valueStr);
+
+            if (key == "Growth") growth = value;
+            else if (key == "Water") water = value;
+            else if (key == "Health") health = value;
         }
+        file.close();
     }
-    file.close();
-}
+};
 
 // Status in Datei speichern
 void saveStatusToFile(const Plant& p) {
@@ -121,8 +133,7 @@ void waterPlant(Plant& p) {
 }
 
 int main() {
-    Plant plant;
-    loadStatusFromFile(plant); // Werte aus Datei laden
+    Plant plant; // Wird automatisch aus Datei geladen, falls vorhanden
 
     while (plant.health > 0) {
         cout << "Press 'g' to water the plant, otherwise wait 1 hour. Press 'c' to clear the screen.\n";
