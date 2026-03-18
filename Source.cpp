@@ -251,7 +251,7 @@ int main() {
         showStatus(plant);
 
         auto start = chrono::steady_clock::now();
-        auto duration = chrono::seconds(20); // 20 Sekunden pro Update
+        auto duration = chrono::hours(1); // 1 Stunde pro Update
 
         while (chrono::steady_clock::now() - start < duration) {
             if (_kbhit()) {
